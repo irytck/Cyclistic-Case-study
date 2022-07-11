@@ -1,0 +1,923 @@
+---
+title: "Cyclistic_bike_share_case_study"
+author: "Iuliia"
+date: '2022-07-03'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Cyclistic case study  
+
+**Data Analyst:** Iuliia Rytck 
+**Client:** Cyclistic 
+**Purpose:** The purpose of this project is to maximize the number of annual members that will be the key to the future growth of Cyclistic.
+
+#### Introduction 
+You are looking at the Cyclistic bike-share marketing analysis project! This is my first case study of Google’s Data Analytics Professional Certificate program. I will perform real-world tasks as a junior data analyst working in the marketing analyst team for a fictional company Cyclistic, a bike-share company in Chicago. The case study requires to follow the steps of the data analysis process: ask, prepare, process, analyse, share, and act. 
+
+#### Scope of Work
+
+![](/Users/user/Desktop/scope of work.png)
+## Step 1 - Define the project
+The main goal of this analysis is to design a new marketing strategies to convert casual riders into annual members. In order to achieve this goal the marketing analyst team needs to answer the following questions: 
+--How do annual members and casual riders use Cyclistic bikes differently?
+--Why would casual riders buy Cyclistic annual memberships?
+--How can Cyclistic use digital media to influence casual riders to become members?  
+
+As a junior data analyst my job is to provide marketing analyst team with insights on how differ annual members and casual riders in use Cyclistic bikes.
+
+#### Statement of the business task:  Maximise the number of annual members.
+How do annual members and casual riders use Cyclistic bikes differently?
+Stakeholders: 
+Primary stakeholders: Marketing director  
+Primary stakeholders: "Cyclistic" marketing analyst team 
+Secondary stakeholders: "Cyclistic" executive team.
+
+## Step 2 - Prepare data for analysis
+To analyze and identify trends, historical trip data were used from Lyft Bikes and Scooters, LLC (“Bikeshare”) that operates the City of Chicago’s Divvy bicycle sharing service. 
+For this analysis I downloaded data from January 2021 to December 2021.
+12 months of Cyclistiic trip data were downloaded [here](https://divvy-tripdata.s3.amazonaws.com/index.html) (Note: The datasets have a different name because Cyclistic is a fictional company. For the purposes of this case study, the datasets are appropriate and will enable to answer the business questions. The data has been made available by Motivate International Inc. under this [license](https://ride.divvybikes.com/data-license-agreement).) 
+
+## Step 3 - Process data for the analysis
+Given the big-scale of the datasets, I will use R through RStudio with libraries necessary for manipulation and visualisation.
+
+#### Install packages
+
+```{r}
+library(tidyverse) 
+library(lubridate) 
+library(ggplot2) 
+library(readr)
+library(ggmap)
+library(geosphere)
+```
+
+```{r Working directory}
+setwd("/Users/user/Desktop/RStudio_Projects/")
+```
+
+#### Collect data. 
+Notes: 12 csv format files corresponding to 12 months of data for 2021
+
+```{r}
+January <- read_csv("202101-divvy-tripdata.csv")
+```
+
+```{r}
+February <- read_csv("202102-divvy-tripdata.csv")
+```
+
+```{r}
+March <- read_csv("202103-divvy-tripdata.csv")
+```
+
+```{r}
+April <- read_csv("202104-divvy-tripdata.csv")
+```
+
+```{r}
+May <- read_csv("202105-divvy-tripdata.csv")
+```
+
+```{r}
+June <- read_csv("202106-divvy-tripdata.csv")
+```
+
+```{r}
+July <- read_csv("202107-divvy-tripdata.csv")
+```
+
+```{r}
+August <- read_csv("202108-divvy-tripdata.csv")
+```
+
+```{r}
+September <- read_csv("202109-divvy-tripdata.csv")
+```
+
+```{r}
+October <- read_csv("202110-divvy-tripdata.csv")
+```
+
+```{r}
+November <- read_csv("202111-divvy-tripdata.csv")
+```
+
+```{r}
+December <- read_csv("202112-divvy-tripdata.csv")
+```
+
+### Wrangle data and combine into a single dataframe
+
+#### Check column names, inspect the dataframes and look for incongruencies before merging.
+
+```{r} 
+colnames(January)
+colnames(February)
+colnames(March)
+str(January)
+str(February)
+str(March)
+```
+
+```{r Quarter 1}
+Quarter_1_2021_tripdata <- bind_rows(January, February, March)
+```
+
+```{r}
+colnames(April)
+colnames(May)
+colnames(June)
+str(April)
+str(May)
+str(June)
+```
+
+```{r Quarter 2}
+Quarter_2_2021_tripdata <- bind_rows(April, May, June)
+```
+
+```{r}
+colnames(July)
+colnames(August)
+colnames(September)
+str(July)
+str(August)
+str(September)
+```
+
+```{r Quarter 3}
+Quarter_3_2021_tripdata <- bind_rows(July, August, September)
+```
+
+```{r}
+colnames(October)
+colnames(November)
+colnames(December)
+str(October)
+str(November)
+str(December)
+```
+
+```{r Quarter 4}
+Quarter_4_2021_tripdata <- bind_rows(October, November, December)
+```
+
+```{r Display 4 quarters}
+glimpse(Quarter_1_2021_tripdata)
+glimpse(Quarter_2_2021_tripdata)
+glimpse(Quarter_3_2021_tripdata)
+glimpse(Quarter_4_2021_tripdata)
+```
+#### Combine all quarters in one dataframe
+```{r Total year}
+Total_2021_tripdata <- bind_rows(Quarter_1_2021_tripdata, Quarter_2_2021_tripdata, Quarter_3_2021_tripdata, Quarter_4_2021_tripdata)
+```
+
+```{r}
+glimpse(Total_2021_tripdata)
+```
+
+```{r Save file}
+write_csv(Total_2021_tripdata, "/Users/user/Desktop/RStudio_Projects/Total_2021_tripdata_merged_dirty.csv")
+```
+
+### CLEAN UP AND ADD DATA TO PREPARE FOR ANALYSIS
+Notes: Clean data. Explore data, looking at the total number of rows, distinct values, maximum, minimum, or mean values.
+Check for null values and duplicates
+Check validity of the data range
+Organize and save cleaned data
+
+
+#### Inspect new table
+```{r}
+dim(Total_2021_tripdata)
+```
+
+```{r}
+head(Total_2021_tripdata)
+str(Total_2021_tripdata)
+```
+
+```{r check missing values}
+colSums(is.na(Total_2021_tripdata))
+```
+
+##### Observations
+ - 690809 missing values for start_station_name and start_station_id; 
+ - No missing values for start_lat and start_lng
+ - 739170 missing values for end_station_name and end_station_id, 
+ - 4771 missing values for end_lat and end_lng. 
+ 
+#### Remove rows with missing values
+```{r}
+Total_2021_tripdata_V1 <- Total_2021_tripdata[complete.cases(Total_2021_tripdata), ]
+```
+
+```{r check}
+colSums(is.na(Total_2021_tripdata_V1))
+```
+
+```{r check duplicated values}
+length(unique(Total_2021_tripdata_V1$ride_id))
+length(unique(Total_2021_tripdata_V1$ride_id)) == nrow(Total_2021_tripdata_V1)
+sum(duplicated(Total_2021_tripdata_V1$ride_id))
+```
+ 
+##### Observations
+ - 4.588.302 unique records, no duplicated values
+ 
+#### Add columns for month, weekday and ride_length for futher analysis
+```{r}
+Total_2021_tripdata_V1$month <- format(as.Date(Total_2021_tripdata_V1$started_at), "%B")
+Total_2021_tripdata_V1$day_of_week <- format(as.Date(Total_2021_tripdata_V1$started_at), "%A")
+Total_2021_tripdata_V1$ride_length <- difftime (Total_2021_tripdata_V1$ended_at, Total_2021_tripdata_V1$started_at, units = "mins")
+```
+#### Check the consistancy of the categorical values
+```{r Check other columns}
+table(Total_2021_tripdata_V1$member_casual)
+table(Total_2021_tripdata_V1$month)
+table(Total_2021_tripdata_V1$day_of_week)
+table(Total_2021_tripdata_V1$rideable_type)
+```
+##### Observations
+- Two options for usertype member and casual
+- Months are consistent 
+- Weekdays are consistent  
+- Three bike types: classic, docked and electric
+
+#### Check validity of the ride duration values
+```{r check negative or "0" values}
+min(Total_2021_tripdata_V1$ride_length)
+max(Total_2021_tripdata_V1$ride_length)
+nrow(Total_2021_tripdata_V1[Total_2021_tripdata_V1$ride_length <= 0,])
+```
+
+##### Observations
+- There are 198 records of negative or "0 sec" ride length, because "started_at" is greater than or equal to the "ended_at". 
+-The longest ride is 55944.15
+
+#### Remove "bad" data
+```{r}
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% 
+  filter(ride_length > 0)
+nrow(Total_2021_tripdata_V1[Total_2021_tripdata_V1$ride_length <= 0,])
+```
+##### Check everything as expected
+```{r}
+glimpse(Total_2021_tripdata_V1)
+```
+##### Observations
+- character data type: ride id, rideable type, station names, station ids, usertype, month and dayweek
+- Date time: started_at, ended_at
+- Double: latitude and longitude
+- Difftime: Ride length in minutes
+
+#### Check consistency of the station data
+```{r Extract station data to a new data frame}
+start_station_data <- Total_2021_tripdata_V1 %>%
+  select(start_station_name, start_station_id, start_lat, start_lng)
+end_station_data <- Total_2021_tripdata_V1 %>%
+  select(end_station_name, end_station_id, end_lat, end_lng)
+```
+#### Inspect start stations data
+```{r}
+colSums(is.na(start_station_data))
+start_station_data %>% 
+  select(start_station_name) %>%
+  unique()%>%
+  count()
+start_station_data %>% 
+  select(start_station_id) %>%
+  unique()%>%
+  count()
+```
+
+```{r}
+nchar(start_station_data$start_station_id)%>%
+ unique()
+nchar(start_station_data$start_lat)%>%
+  unique()
+nchar(start_station_data$start_lng)%>%
+  unique()
+```
+
+##### Observations
+- 842 start station name
+- 829 start station ids
+- Start_station-id naming is inconsistent, different number of characters
+- Coordinates are inconsistent, different number of characters
+#### Check end stations data
+```{r}
+colSums(is.na(end_station_data))
+end_station_data %>%
+  select(end_station_name) %>%
+  unique()%>%
+  count()
+end_station_data %>%
+  select(end_station_id) %>%
+  unique()%>%
+  count()
+```
+```{r Check consistency of the end stations data}
+nchar(end_station_data$end_station_id)%>%
+ unique()
+nchar(end_station_data$end_lat)%>%
+  unique()
+nchar(end_station_data$end_lng)%>%
+  unique()
+```
+
+##### Observations
+Inconsistency in station naming and ids
+- 839 unique end station name
+- 827 unique end station ids
+- Coordinates are inconsistent, different number of characters
+
+#### Let´s find inconsistancies
+```{r Display data}
+str(start_station_data)
+str(end_station_data)
+```
+```{r rename columns}
+start_station_data <- rename(start_station_data, 
+                             station_name = start_station_name,
+                             station_id = start_station_id,
+                             latitude = start_lat,
+                             longitude = start_lng)
+end_station_data <- rename(end_station_data,
+                           station_name = end_station_name,
+                           station_id = end_station_id,
+                           latitude = end_lat,
+                           longitude = end_lng)
+colnames(start_station_data)
+colnames(end_station_data)
+```
+#### Merge start station data with end station data
+```{r}
+stations_combined <- rbind(start_station_data, end_station_data)
+glimpse(stations_combined)
+```
+
+```{r unique values}
+stations_combined <- stations_combined %>%
+  unique()
+glimpse(stations_combined)
+```
+#### Extract station name and ids in a new data frame
+```{r}
+id_name <- stations_combined %>%
+  select(station_name, station_id)%>%
+  arrange(station_id)%>%
+  unique()
+glimpse(id_name)
+```
+#### Count unique name and ids
+```{r}
+id_name %>% count(station_id)
+id_name %>% count(station_name)
+```
+#### Observations
+- 846 unique records
+- 845 unique station name 
+- 832 unique station ids
+#### Extract ids
+```{r}
+ids <- id_name %>% 
+  select(station_id)%>%
+  count(station_id)
+glimpse(ids)
+```
+#### Filter station ids that appears more than once
+```{r}
+filter(ids, n>1)
+```
+##### Observations 
+- 13th station ids appears more than once
+#### Inspect inconsistencies
+```{r}
+filter(id_name, station_id == "13074")
+filter(id_name, station_id == "13099")
+filter(id_name, station_id == "13300")
+filter(id_name, station_id == "351")
+filter(id_name, station_id == "631")
+filter(id_name, station_id == "KA1503000055")
+filter(id_name, station_id == "KA1504000168")
+filter(id_name, station_id == "LF-005")
+filter(id_name, station_id == "TA1305000039")
+filter(id_name, station_id == "TA1306000029")
+filter(id_name, station_id == "TA1307000041")
+filter(id_name, station_id == "TA1309000039")
+filter(id_name, station_id == "TA1309000049")
+```
+##### Observations
+- For station id "13074", "13099", "13300", "631", "KA1503000055", "KA1504000168", "LF-005", "TA1307000041", "TA1309000039", "TA1309000049" same station has different naming
+- For station id "351" station id number entered instead of the name "Mulligan Ave & Wellington Ave"
+- Station id "TA1305000039" has two different station name "Marshfield Ave & Cortland St" and "Elston Ave & Cortland St"
+- Station id "TA1306000029" the same station has different naming "Lake Shore Dr & Ohio St"			
+"DuSable Lake Shore Dr & Ohio St"	 and one record has a different station name "McClurg Ct & Ohio St"
+
+#### Lets fix errors in station naming and ids
+```{r 13074 - Broadway & Wilson - Truman College Vaccination Site}
+Total_2021_tripdata_V1 %>%
+  filter(start_station_id == "13074", end_station_id == "13074")
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>%
+  mutate(start_station_name = replace(start_station_name, start_station_name == "Broadway & Wilson Ave", "Broadway & Wilson - Truman College Vaccination Site"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>%
+  mutate(end_station_name = replace(end_station_name, end_station_name == "Broadway & Wilson Ave", "Broadway & Wilson - Truman College Vaccination Site"))
+  Total_2021_tripdata_V1 %>%
+    filter(start_station_id == "13074", end_station_id == "13074")
+```
+
+```{r 13099 - Halsted St & 18th St}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "13099", end_station_id == "13099")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Halsted St & 18th St (Temp)", "Halsted St & 18th St"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Halsted St & 18th St (Temp)", "Halsted St & 18th St"))
+  Total_2021_tripdata_V1 %>%
+    filter(start_station_id == "13099", end_station_id == "13099")
+```
+
+```{r 13300 - DuSable Lake Shore Dr & Monroe St}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "13300", end_station_id == "13300")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Lake Shore Dr & Monroe St", "DuSable Lake Shore Dr & Monroe St"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Lake Shore Dr & Monroe St", "DuSable Lake Shore Dr & Monroe St"))
+  Total_2021_tripdata_V1 %>%
+    filter(start_station_id == "13300", end_station_id == "13300")
+```
+
+```{r 351 - Mulligan Ave & Wellington Ave}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "351", end_station_id == "351")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "351", "Mulligan Ave & Wellington Ave"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "351", "Mulligan Ave & Wellington Ave"))
+  Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "351", end_station_id == "351")
+```
+
+```{r 631 - Malcolm X College Vaccination Site}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "631", end_station_id == "631")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Malcolm X College", "Malcolm X College Vaccination Site"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Malcolm X College", "Malcolm X College Vaccination Site"))
+  Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "631", end_station_id == "631")
+
+```
+
+```{r KA1503000055 - Halsted & 63rd - Kennedy-King Vaccination Site}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "KA1503000055", end_station_id == "KA1503000055")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Halsted St & 63rd St", "Halsted & 63rd - Kennedy-King Vaccination Site"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Halsted St & 63rd St", "Halsted & 63rd - Kennedy-King Vaccination Site"))
+  Total_2021_tripdata_V1 %>%
+   filter(start_station_id == "KA1503000055", end_station_id == "KA1503000055")
+```
+
+```{r KA1504000168 Western & 28th - Velasquez Institute Vaccination Site}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "KA1504000168", end_station_id == "KA1504000168")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Western Ave & 28th St", "Western & 28th - Velasquez Institute Vaccination Site"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Western Ave & 28th St", "Western & 28th - Velasquez Institute Vaccination Site"))
+  Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "KA1504000168", end_station_id == "KA1504000168")
+```
+
+```{r LF-005 - DuSable Lake Shore Dr & North Blvd}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "LF-005", end_station_id == "LF-005")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Lake Shore Dr & North Blvd", "DuSable Lake Shore Dr & North Blvd"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Lake Shore Dr & North Blvd", "DuSable Lake Shore Dr & North Blvd"))
+  Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "LF-005", end_station_id == "LF-005")
+```
+
+```{r new station ids for - Marshfield Ave & Cortland St, Elston Ave & Cortland S }
+Total_2021_tripdata_V1 %>% filter(start_station_id == "TA1305000039", end_station_id == "TA1305000039")
+Total_2021_tripdata_V1 %>% filter(start_station_name == "Marshfield Ave & Cortland St", end_station_name == "Marshfield Ave & Cortland St")
+Total_2021_tripdata_V1 %>% filter(start_station_name == "Elston Ave & Cortland St", end_station_name == "Elston Ave & Cortland St")
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_id = replace(start_station_id, start_station_name == "Marshfield Ave & Cortland St", "TA1305000039M"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_id = replace (start_station_id, start_station_name == "Elston Ave & Cortland St", "TA1305000039E"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_id = replace(end_station_id, end_station_name == "Marshfield Ave & Cortland St", "TA1305000039M"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_id = replace (end_station_id, end_station_name == "Elston Ave & Cortland St", "TA1305000039E"))
+Total_2021_tripdata_V1 %>% filter(start_station_id == "TA1305000039M", end_station_id == "TA1305000039M")
+```
+
+```{r Change name DuSable Lake Shore Dr & Ohio St and create new id for McClurg Ct & Ohio St}
+Total_2021_tripdata_V1 %>% filter(start_station_id == "TA1306000029", end_station_id == "TA1306000029" )
+Total_2021_tripdata_V1 %>% filter(start_station_name == "Lake Shore Dr & Ohio St", end_station_name == "Lake Shore Dr & Ohio St")
+Total_2021_tripdata_V1 %>% filter(start_station_name == "DuSable Lake Shore Dr & Ohio St", end_station_name == "DuSable Lake Shore Dr & Ohio St")
+Total_2021_tripdata_V1 %>% filter(start_station_name == "McClurg Ct & Ohio St", end_station_name == "McClurg Ct & Ohio St")
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Lake Shore Dr & Ohio St", "DuSable Lake Shore Dr & Ohio St"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_id = replace(start_station_id, start_station_name == "McClurg Ct & Ohio St", "TA1306000029-M"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Lake Shore Dr & Ohio St", "DuSable Lake Shore Dr & Ohio St"))
+Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_id = replace(end_station_id, end_station_name == "McClurg Ct & Ohio St", "TA1306000029-M"))
+Total_2021_tripdata_V1 %>% filter(start_station_id == "TA1306000029", end_station_id == "TA1306000029")
+Total_2021_tripdata_V1 %>% filter(start_station_id == "TA1306000029-M", end_station_id == "TA1306000029-M")
+Total_2021_tripdata_V1 %>% filter(start_station_name == "DuSable Lake Shore Dr & Ohio St", end_station_name == "DuSable Lake Shore Dr & Ohio St")
+```
+
+```{r TA1307000041 - DuSable Lake Shore Dr & Wellington Ave}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "TA1307000041", end_station_id == "TA1307000041")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Lake Shore Dr & Wellington Ave", "DuSable Lake Shore Dr & Wellington Ave"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Lake Shore Dr & Wellington Ave", "DuSable Lake Shore Dr & Wellington Ave"))
+  Total_2021_tripdata_V1 %>%
+    filter(start_station_id == "TA1307000041", end_station_id == "TA1307000041")
+```
+
+```{r TA1309000039 - DuSable Lake Shore Dr & Diversey Pkwy}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "TA1309000039", end_station_id == "TA1309000039")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Lake Shore Dr & Diversey Pkwy", "DuSable Lake Shore Dr & Diversey Pkwy"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name,end_station_name == "Lake Shore Dr & Diversey Pkwy", "DuSable Lake Shore Dr & Diversey Pkwy"))
+  Total_2021_tripdata_V1 %>%
+    filter(start_station_id == "TA1309000039", end_station_id == "TA1309000039")
+```
+
+```{r TA1309000049 - DuSable Lake Shore Dr & Belmont Ave}
+Total_2021_tripdata_V1 %>% 
+  filter(start_station_id == "TA1309000049", end_station_id == "TA1309000049")
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(start_station_name = replace(start_station_name, start_station_name == "Lake Shore Dr & Belmont Ave", "DuSable Lake Shore Dr & Belmont Ave"))
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% mutate(end_station_name = replace(end_station_name, end_station_name == "Lake Shore Dr & Belmont Ave", "DuSable Lake Shore Dr & Belmont Ave"))
+  Total_2021_tripdata_V1 %>%
+    filter(start_station_id == "TA1309000049", end_station_id == "TA1309000049")
+```
+#### Check everything as expected
+```{r}
+id_name_v1 <- Total_2021_tripdata_V1 %>%
+  select(start_station_id, start_station_name, end_station_name, end_station_id) %>%
+  arrange(start_station_id, end_station_id) %>%
+  unique()
+id_name_v1 %>% count(start_station_id)
+id_name_v1 %>% count(end_station_id)
+id_name_v1 %>% count(start_station_name) 
+id_name_v1 %>% count(end_station_name)
+```
+
+#### Observations
+ - Better, but there are still inconsistencies
+ start station: 831 names and 830 ids. end station: 829 names and 828 ids
+ 
+#### Extract sation names
+```{r}
+names_st <- id_name %>% 
+  select(station_name)%>%
+  count(station_name)
+glimpse(names_st)
+```
+#### Filter station name that appears more than once
+```{r}
+filter(names_st, n>1)
+```
+#### check station
+```{r}
+filter(id_name, station_name == "Loomis St & 89th St")
+```
+##### Observations: 
+Loomis St & 89th St has an error in station id.
+
+#### Let´s fix the error
+```{r}
+  Total_2021_tripdata_V1 <- Total_2021_tripdata_V1 %>% 
+  mutate(start_station_id = replace(start_station_id, start_station_name == "Loomis St & 89th St", "20102")) %>%
+  mutate(end_station_id = replace(end_station_id, end_station_name == "Loomis St & 89th St", "20102"))
+Total_2021_tripdata_V1 %>% filter(start_station_name == "Loomis St & 89th St", end_station_name == "Loomis St & 89th St")
+Total_2021_tripdata_V1 %>% filter(start_station_id == "20102", end_station_id == "20102")
+```
+
+#### Recheck consistency of the station data
+```{r}
+id_name_v2 <- Total_2021_tripdata_V1 %>%
+  select(start_station_id, start_station_name, end_station_name, end_station_id) %>%
+  arrange(start_station_id, end_station_id) %>%
+  unique()
+id_name_v2 %>% count(start_station_id)
+id_name_v2 %>% count(end_station_id)
+id_name_v2 %>% count(start_station_name) 
+id_name_v2 %>% count(end_station_name)
+```
+
+##### Observations 
+Station name unique records equals station ids unique records. 
+
+#### Let´s check everything before analysing 
+```{r}
+str(Total_2021_tripdata_V1)
+colSums(is.na(Total_2021_tripdata_V1))
+```
+#### Save file
+```{r}
+write_csv(Total_2021_tripdata_V1, "/Users/user/Desktop/RStudio_Projects/Total_2021_tripdata_cleaned.csv")
+```
+
+## Step 4 - Conduct analysis
+```{r Total rides}
+Total_2021_tripdata_V1 %>% count(ride_id)
+table(Total_2021_tripdata_V1$member_casual)
+```
+##### Observations
+- Cyclistic users in 2021 made total of 4.588.104 rides. 2048302 of them were completed by casual riders and 2539802 by annual members, almost 10 % more. We can´t tell how many annual members and casual riders there are because of lack of user data. 
+#### Visual total rides by usertype
+```{r}
+users_count <- c(2048302, 2539802)
+pie_labels <- paste0(round(100 * users_count/sum(users_count), 2), "%")
+pie(users_count, labels = pie_labels, main = "Total users", col = rainbow(length(users_count)))
+legend("topright", c("casual", "member"), cex = 0.8, fill = rainbow(length(users_count)))
+```
+#### Descriptive statistic
+```{r}
+mean(Total_2021_tripdata_V1$ride_length)
+median(Total_2021_tripdata_V1$ride_length)
+min(Total_2021_tripdata_V1$ride_length)
+max(Total_2021_tripdata_V1$ride_length)
+```
+##### Observations 
+- The average ride duration for both users is around 22 minutes
+- The middle value listed is 12 mins
+- The shortest ride is 0.01 (Probably I should´ve removed too short rides, but I do not have a criteria I can rely on)
+- The longest ride is 55944.15 which is around 38 days.(*longest rides are made mostly by casual riders)
+
+#### Average ride duration by usertype
+```{r}
+aggregate(Total_2021_tripdata_V1$ride_length ~ Total_2021_tripdata_V1$member_casual, FUN=mean)
+```
+#### Visual average ride duration by usertype
+```{r}
+average_ride_length <- c(32.51, 13.18)
+label <- c("casual", "member")
+barplot(average_ride_length, horiz = TRUE, xlab = "average ride time", ylab = "usertype", main = "Average ride time by usertype", col = rainbow(length(average_ride_length)))
+legend("topright", c("casual", "member"), cex = 0.8, fill = rainbow(length(average_ride_length)))
+```
+
+##### Observations
+--Average ride length for casual riders is 32 minutes, which is twice longer than for annual members that stand for 13 minutes.
+#### Longest ride by usertype
+```{r Max ride_length}
+aggregate(Total_2021_tripdata_V1$ride_length ~ Total_2021_tripdata_V1$member_casual, FUN = max)
+```
+
+##### Observations
+--The longest rides are made mostly by casual riders (55944.150 mins equals 38 days, 1495.633 equals 1 day).
+
+```{r Min ride length}
+aggregate(Total_2021_tripdata_V1$ride_length ~Total_2021_tripdata_V1$member_casual, FUN = min) # criteria needed to exclude the rides that are too short
+```
+
+#### Median ride duration by usertype
+```{r}
+aggregate(Total_2021_tripdata_V1$ride_length ~ Total_2021_tripdata_V1$member_casual, FUN = median)
+```
+
+#### Compare total number of rides by month
+
+```{r}
+Total_2021_tripdata_V1%>%
+  group_by(month, member_casual) %>%
+  summarise(number_of_rides = n()) %>%
+  arrange(month, member_casual)
+```
+
+```{r order months}
+Total_2021_tripdata_V1$month <- ordered(Total_2021_tripdata_V1$month, levels=c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+```
+#### Visualisation comparing total number of rides my month 
+```{r}
+Total_2021_tripdata_V1%>%
+  group_by(month, member_casual) %>%
+  summarise(number_of_rides = n(), .groups = 'drop') %>%
+  arrange(month, member_casual) %>%
+ ggplot(aes(x = month, y = number_of_rides, fill = member_casual))+
+  geom_col(position = "dodge")+
+  scale_y_continuous(labels = scales :: comma)+
+  labs(x = "month", y = "number of rides", fill = "Usertype", title = "Total number of rides each month by Usertype")+
+  guides(x = guide_axis(angle = 45))
+```
+
+##### Observation
+--Bike use is growing as summer approaches for both user types. 
+--Annual members use bikes more than casuals except for July and August when casual riders make more trips
+--From October to April the use of bike by casual riders decrease significantly, while for annual members the decline is more gradual
+--January and February -cold months, the bike use is very low
+--From June to September are hot months, when the bike use is very high 
+
+#### Average ride duration by month
+```{r}
+  Total_2021_tripdata_V1 %>%
+  group_by(month, member_casual) %>%
+  summarise(average_ride_length = mean(ride_length), min(ride_length), max(ride_length), .groups = 'drop')%>%
+  arrange(month, member_casual)%>%
+ ggplot(aes(x = month, y = average_ride_length, fill = member_casual))+
+  geom_col(position = "dodge2")+
+  labs(x = "month", y = "Minutes", fill = "Usertype", title = "Average ride duration by month")+
+guides(x = guide_axis(angle = 45))
+```
+
+##### Observations
+--The average ride duration for annual members is consistent and round about 15 minutes. For casual riders the average ride duration varies between 20 and 40 minutes during the year.
+
+```{r Order weekday}
+Total_2021_tripdata_V1$day_of_week <- ordered(Total_2021_tripdata_V1$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+#### Compare total number of rides by weekday
+```{r}
+Total_2021_tripdata_V1 %>%
+  group_by(day_of_week, member_casual) %>%
+  summarise(number_of_rides = n(), .groups = 'drop') %>%
+  arrange(day_of_week, member_casual) %>%
+  ggplot(aes(x = day_of_week, y = number_of_rides, fill = member_casual))+
+  geom_col(position = "dodge")+
+  scale_y_continuous(labels = scales :: comma)+
+  labs(x = "Weekday", y = "Number of rides", fill = "Usertype", title = "Total rides by Weekday")
+
+```
+
+##### Observations
+--From this chart, we can see that annual members are more consistent in bike use during the week with a slight increase during weekdays. 
+--While for casual riders the bike use grows drastically during weekends. (Twice as many trips on Sat and Sun than on weekdays)
+#### Compare average ride duration by weekday
+```{r}
+  Total_2021_tripdata_V1 %>%
+  group_by(day_of_week, member_casual) %>%
+  summarise(average_ride_length = mean(ride_length), min(ride_length), max(ride_length), .groups = 'drop') %>%
+  arrange(day_of_week, member_casual)%>%
+  ggplot(aes(x = day_of_week, y = average_ride_length, fill = member_casual))+
+  geom_col(position = "dodge2")+
+  labs(x = "Weekday", y = "Minutes", fill = "Usertype", title = "Average ride duration by weekday")
+
+```
+
+##### Observations
+--Once again we can see that annual members ride on average 15 mins during the 7 days week, while casual rides are as twice longer with slight increase during weekends. 
+
+#### Compare Bike type use
+```{r}
+Total_2021_tripdata_V1 %>%
+  group_by(member_casual, rideable_type) %>%
+  summarise(number_of_rides = n(), .groups = 'drop')%>%
+  ggplot(aes(x = rideable_type, y = number_of_rides, fill = member_casual))+
+  geom_col(position = "dodge2")+
+  labs(x = "Rideable type", y = "Number of rides", fill = "Usertype", title = "Total rides by bike type")
+
+```
+
+##### Observations
+--The most popular bike type for both usert ypes is a classic bike, second place for electric bike and some casual riders chose docked bike.
+
+#### Add column for day hour 
+```{r}
+Total_2021_tripdata_V1$ride_hour <- format(Total_2021_tripdata_V1$started_at, format = "%H")
+head(Total_2021_tripdata_V1)
+```
+
+```{r order day hour}
+Total_2021_tripdata_V1$ride_hour <- ordered(Total_2021_tripdata_V1$ride_hour, levels=c("00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"))
+```
+#### Compare number of rides by day hour
+```{r}
+Total_2021_tripdata_V1 %>%
+  group_by(member_casual, ride_hour) %>%
+  summarise(number_of_rides = n(), .groups = 'drop') %>%
+  arrange(ride_hour)%>%
+  ggplot(aes(x = ride_hour, y = number_of_rides, fill = member_casual))+
+  geom_bar(position = "dodge", stat = "identity") +
+  scale_y_continuous(labels = scales :: comma)+
+  labs(x = "Day hour", y = "number of rides", title = "Rides distribution by day hour")
+```
+
+##### Observations
+- These two bar charts show us that the number of rides for casual riders increase gradually during the day with the top between 4PM and 7PM. 
+- While for annual members we can see the considerable leap in the morning rush hours between 6AM and 9AM, after it varies during the day and another leap between 4PM and 7PM
+- Also, I should point out that generally during the day annual members ride more than casuals , but at night casual rides are higher than for annual members.  
+
+#### Find top 10 start stations for members
+```{r}
+Total_2021_tripdata_V1 %>%
+  filter(member_casual =='member') %>%
+  group_by(start_station_name) %>%
+  summarise(start_station_count = n()) %>%
+  arrange(desc(start_station_count)) %>%
+slice(1:10)%>%
+  ggplot(aes(x = start_station_count, y = reorder(start_station_name, start_station_count)))+
+  geom_col(position = "dodge", fill = "darkturquoise")+
+  labs(x = "Number of rides", y = "Start Station Name", title = "Top 10 Start Station for Members")
+```
+
+#### Find top 10 end stations for members
+```{r}
+
+Total_2021_tripdata_V1 %>%
+  filter(member_casual =='member') %>%
+  group_by(end_station_name) %>%
+  summarise(end_station_count = n()) %>%
+  arrange(desc(end_station_count)) %>%
+slice(1:10)%>%
+  ggplot(aes(x = end_station_count, y = reorder(end_station_name, end_station_count)))+
+  geom_col(position = "dodge", fill = "darkturquoise")+
+  labs(x = "Number of rides", y = "End Station Name", title = "Top 10 End Station for Members")
+```
+
+#### Find top 10 start stations for casuals
+```{r}
+Total_2021_tripdata_V1 %>%
+  filter(member_casual == 'casual') %>%
+  group_by(start_station_name) %>%
+  summarise(start_station_count = n()) %>%
+  arrange(desc(start_station_count)) %>%
+  slice(1:10)%>%
+  ggplot(aes(x = start_station_count, y = reorder(start_station_name, start_station_count)))+
+  geom_col(position = "dodge", fill = "darksalmon")+
+  labs(x = "Number of rides", y = "Start Station Name", title = "Top 10 Start Stations for Casuals")
+```
+
+#### Find top 10 end stations for casuals
+```{r}
+
+Total_2021_tripdata_V1 %>%
+  filter(member_casual =='casual') %>%
+  group_by(end_station_name) %>%
+  summarise(end_station_count = n()) %>%
+  arrange(desc(end_station_count)) %>%
+slice(1:10)%>%
+  ggplot(aes(x = end_station_count, y = reorder(end_station_name, end_station_count)))+
+  geom_col(position = "dodge", fill = "darksalmon")+
+  labs(x = "Number of rides", y = "End Station Name", title = "Top 10 End Station for Casuals")
+```
+
+### Let´s create a map to see distribution of top station by usertype
+#### Create a data frame with coordinates
+```{r}
+total_trip_coordinates <- Total_2021_tripdata_V1 %>% 
+filter(start_lng != end_lng & start_lat != end_lat) %>%
+group_by(start_lng, start_lat, end_lng, end_lat, member_casual) %>%
+summarise(total_rides = n(),.groups="drop")%>%
+  filter(total_rides > 100)
+```
+```{r Display}
+glimpse(total_trip_coordinates)
+```
+#### Create map image
+```{r}
+chicago <- c(left = -87.70, bottom = 41.60, right = -87.55, top = 41.95)
+chicago_map <- get_stamenmap(bbox = chicago, zoom = 15, maptype = "terrain")
+```
+
+#### Visual map with top station distribution by usertype
+```{r}
+ggmap(chicago_map,darken = c(0.1, "white")) +
+   geom_point(total_trip_coordinates, mapping = aes(x = start_lng, y = start_lat, color = member_casual), size = 1) +
+   coord_fixed(0.8) +
+   labs(title = "Top Stations use distribution by usertype",x=NULL,y=NULL) +
+   theme(legend.position="right")
+```
+##### Observations:
+Most popular station for casuals are situated along the coast at the main touristic sites
+While annual members are evenly distributed throughout the city and the most popular stations are located in The Near North Side the central Chicago and the most densely populated area. 
+Top routes for casual users are alongside central Chicago  and coast from park west to near south side.
+## Step 5 - Export summary file for Visuals
+```{r}
+summary_avg_ride_length <- aggregate(Total_2021_tripdata_V1$ride_length ~ Total_2021_tripdata_V1$member_casual + Total_2021_tripdata_V1$day_of_week, FUN = mean)
+write.csv(summary_avg_ride_length, "/Users/user/Desktop/RStudio_Projects/avg_ride_length_summary.csv")
+```
+### Key Takeaways
+
+Bike use increases during the warmer months for both user types
+The most popular bike type is a classic bike for both groups
+
+#### Annual members use bike on a regular basis commuting consistently, that motivates them to buy an annual membership.
+--Have stable average ride duration during the year. Use bike during rush hours on workdays (6AM-9AM and 4PM-7PM)
+--Station use have a larger geographical area, most used stations are evenly spread out throughout the most densely populated area. Top 10 stations are located in The Near North Side the central Chicago. 
+--They are active during all year and more consistent in bike use throughout a week.
+
+#### Casual riders use bike occasionally, mostly for leisure and don´t have incentives to buy an annual membership.
+--On average conduct significantly longer rides than members. 
+--They are more active in the afternoon hours, rarely use bikes in the early morning.
+--Number of rides grows considerably on weekends and summer. 
+--Top routes are alongside central Chicago and bay area from park west to near south side. Most used stations are in the center of the city, touristic sites and parks.
+--In winter bike use decreases considerably. 
+
+## Step 6 - Share findings with stakeholders
+
+My presentation you can find [here]
+
+## Step 7 - Act on key findings
+A successful strategy needs to provide incentives and persuade casual riders to switch into annual members.
+### TOP 3 Recommendations based on key findings
+1. Offer benefits that come with annual membership:
+- Collaborative discounts and special offers for annual members (with leisure businesses along the Bay area and downtown: restaurants, museums, etc.)
+- Rewards programs for annual members ("complete 100 km in one month and win a dinner for two" this program can incentive casuals long ride behavior)
+2. Marketing campaigns targeting casual riders explaining health benefits of bike rides and savings with annual membership (For this we will need to collect more data on pricing plans. After completing the ride in the app show the popup message "xx km done, xxx calories burned, CO emissions reduced". 
+3. Minimize possible inconvenience for the members. For example, book the bike 15 min before the ride in order to avoid arriving to the station with no bikes available, that happens during the rush hours, peak season and weekends. 
+4. Contests between annual members. Create a community for members, so users can feel the privilege of being members.
+
+Since the use increases during Summer months it is convenient perform marketing companies during these months. But in winter it can be useful to offer discounts for annual passes.
+
+## Considerations for further analysis
+Finding out what motivates users will help us to design more effective marketing strategy. Collect more quantitative data on demographics would provide more information about users´ differences. Also conduct a survey to get qualitative data on behavioral differences and motivation of the users. 
+Explore more data about casuals rider´s behavior (pass types they use:single or full day), frequency of use for each rider). With these data, we can see how many rides each casual rider does during the month/year and offer a saving plans with membership that will incentive them to switch. 
